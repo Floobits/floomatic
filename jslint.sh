@@ -7,4 +7,4 @@ jslint \
 --node \
 --nomen \
 --indent 2 \
-*.js
+*.js lib/*.js

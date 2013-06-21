@@ -1,65 +1,43 @@
 #!/usr/bin/env node
 var fs = require('fs');
-var path = require('path');
+var tls = require('tls');
 
 var async = require('async');
+var dmp_module = require("diff_match_patch");
+var DMP = new dmp_module.diff_match_patch();
 var _ = require("underscore");
 
-var watchers = {};
-var current_state = {};
+var floo_connection = require("./lib/floo_connection");
+var listener = require("./lib/listener");
 
 
-var listener = function (original_path, is_dir, event, filename) {
-  var buf;
-  if (!is_dir && event !== 'rename') {
-    buf = fs.readFileSync(original_path);
-    console.log(buf.toString(), current_state[original_path].toString());
+
+var parse_url = function (url, cb) {
+  var parsed_url = {};
+
+  parsed_url.host = "floobits.com";
+  parsed_url.port = 3448;
+  parsed_url.klass = tls;
+
+  // parsed_url.conn_class = net;
+
+  return parsed_url;
+};
+
+
+exports.run = function () {
+  var cwd = process.cwd(),
+    floo_file,
+    data,
+    parsed_url;
+
+  try {
+    floo_file = fs.readFileSync(".floo");
+    data = JSON.parse(floo_file);
+    parsed_url = parse_url(data.url);
+  } catch (e) {
+    console.log("no floo file");
   }
-  console.log(event, original_path, is_dir);
+
+  var floo_conn = new floo_connection.FlooConnection(parsed_url);
 };
-
-var add_listener = function (f, is_dir) {
-  is_dir = is_dir === true ? true : false;
-  fs.readFile(f, function (err, buf) {
-    current_state[f] = buf;
-    // note sure possibly 50K closures is a good idea, but it works for HN...
-    fs.watch(f, listener.bind(null, f, is_dir));
-  });
-
-};
-
-var watch = function (to_watch) {
-  var sub_dirs = [],
-    files = [],
-    iter,
-    children = fs.readdirSync(to_watch).map(function (child) {
-      return path.join(to_watch, child);
-    });
-
-  iter = function (p, cb) {
-    console.log(p);
-    fs.lstat(p, function (err, stats) {
-      if (stats.isDirectory()) {
-        sub_dirs.push(p);
-      } else if (stats.isFile()) {
-        files.push(p);
-      }
-      return cb();
-    });
-  };
-
-  async.eachLimit(children, 10, iter, function (err) {
-    sub_dirs.forEach(watch);
-    files.forEach(add_listener);
-    add_listener(to_watch, true);
-  });
-};
-
-
-var main = function () {
-  var cwd = process.cwd();
-  console.log('watching cwd', cwd);
-  watch(cwd);
-};
-
-main();
