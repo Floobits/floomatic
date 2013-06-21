@@ -45,6 +45,7 @@ var add_listener = function(f, is_dir){
   is_dir = is_dir === true ? true : false;
   fs.readFile(f, function(err, buf){
     current_state[f] = buf;
+    // note sure possibly 50K closures is a good idea, but it works for HN...
     fs.watch(f, listener.bind(null, f, is_dir));
   });
 
