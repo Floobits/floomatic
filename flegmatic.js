@@ -51,6 +51,10 @@ var add_listener = function(f, is_dir){
 };
 
 var listener = function(original_path, is_dir, event, filename){
+  if (!is_dir && event != 'rename'){
+    buf = fs.readFileSync(original_path);
+    console.log(buf.toString(), current_state[original_path].toString());
+  }
   console.log(event, original_path, is_dir);
 };
 main();
