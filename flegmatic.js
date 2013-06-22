@@ -26,7 +26,7 @@ var parse_url = function (url, cb) {
   return parsed_url;
 };
 
-var parse_floorc = function(){
+var parse_floorc = function () {
   var floorc = {},
     floorc_path,
     floorc_lines;
@@ -52,8 +52,10 @@ var parse_floorc = function(){
   return floorc;
 };
 
-var parse_dot_floo = function(){
-  var parsed_url = {};
+var parse_dot_floo = function () {
+  var data,
+    floo_file,
+    parsed_url = {};
   try {
     floo_file = fs.readFileSync(".floo");
     data = JSON.parse(floo_file);
@@ -64,12 +66,12 @@ var parse_dot_floo = function(){
   return parsed_url;
 };
 
-var parse_args = function(){
-  var floorc = parse_floorc();
-  var parsed_url = parse_dot_floo();
+var parse_args = function () {
+  var floorc = parse_floorc(),
+    parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create --delete --perms PERM')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --perms PERM')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -80,12 +82,12 @@ var parse_args = function(){
     .default('w', parsed_url.workspace)
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
     .default('o', parsed_url.owner || floorc.username)
-    .describe('create', 'Creates a new workspace if possible.')
+    .describe('create', 'Creates a new workspace if possible (any value passed will override -w) If not -w, defaults to dirname.')
     .describe('delete', 'Deletes the workspace if possible (can be used with --create to curb stomp).')
     .describe('perms', 'Used with --create. 0 = private, 1 = readable by anyone, 2 = writeable by anyone.')
     .describe('H', 'For debugging/development. Defaults to floobits.com.')
     .describe('p', 'For debugging/development. Defaults to 3148.')
-    .demand(['H', 'p', 'w', 'u', 's'])
+    .demand(['H', 'p', 'u', 's'])
     .argv;
 };
 
@@ -97,23 +99,39 @@ exports.run = function () {
     floo_file,
     data,
     parsed_url,
+    series = [],
     args = parse_args();
 
   if (args.help || args.h) {
     optimist.showHelp();
     process.exit(0);
   }
+
   args.o = args.o || args.u;
-
-  if (args['delete']){
-    api.del(args.H, args.o, args.w, cb);
+  if (args.create && args.create === true){
+    args.create = path.basename(process.cwd());
   }
-  if (args.create){
-    api.create(args.H, args.o, args.w, cb);
+  args.w = args.create || args.w;
+
+  if (!args.w){
+    console.error('I need a workspace name.');
+    optimist.showHelp();
+    process.exit(0);
   }
 
-  floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
-  console.log('watching cwd', process.cwd());
-  floo_listener = new listener.Listener(process.cwd(), floo_conn);
-  floo_conn.connect();
+
+  if (args['delete']) {
+    series.push(api.del.bind(api, args.H, args.o, args.w));
+  }
+
+  if (args.create) {
+    series.push(api.create.bind(api, args.H, args.o, args.s, args.w, args.perms));
+  }
+
+  async.series(series, function(err){
+    floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
+    console.log('watching cwd', process.cwd());
+    floo_listener = new listener.Listener(process.cwd(), floo_conn);
+    floo_conn.connect();
+  });
 };
