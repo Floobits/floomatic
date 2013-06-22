@@ -23,9 +23,6 @@ var parse_url = function (url, cb) {
   parsed_url.klass = tls;
   parsed_url.workspace = "rax-demo";
   parsed_url.owner = "kansface";
-
-  // parsed_url.conn_class = net;
-
   return parsed_url;
 };
 
@@ -72,10 +69,8 @@ var parse_args = function(){
   var parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create-workspace --delete-workspace --recreate-workspace --workspace-perms PERM')
-    .describe('H', 'For debugging/development. Defaults to floobits.com.')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create --delete --perms PERM')
     .default('H', parsed_url.host || 'floobits.com')
-    .describe('p', 'For debugging/development. Defaults to 3148.')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
     .default('u', floorc.username)
@@ -85,6 +80,11 @@ var parse_args = function(){
     .default('w', parsed_url.workspace)
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
     .default('o', parsed_url.owner || floorc.username)
+    .describe('create', 'Creates a new workspace if possible.')
+    .describe('delete', 'Deletes the workspace if possible (can be used with --create to curb stomp).')
+    .describe('perms', 'Used with --create. 0 = private, 1 = readable by anyone, 2 = writeable by anyone.')
+    .describe('H', 'For debugging/development. Defaults to floobits.com.')
+    .describe('p', 'For debugging/development. Defaults to 3148.')
     .demand(['H', 'p', 'w', 'u', 's'])
     .argv;
 };
@@ -99,16 +99,16 @@ exports.run = function () {
     parsed_url,
     args = parse_args();
 
-  if (args.help) {
+  if (args.help || args.h) {
     optimist.showHelp();
     process.exit(0);
   }
   args.o = args.o || args.u;
 
-  if (args['delete-workspace']){
+  if (args['delete']){
     api.del(args.H, args.o, args.w, cb);
   }
-  if (args['create-workspace']){
+  if (args.create){
     api.create(args.H, args.o, args.w, cb);
   }
 
