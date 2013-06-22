@@ -70,14 +70,20 @@ var parse_args = function(){
   var parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] -H [host] -p [port] --create-room --delete-room')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create-room --delete-room --recreate-room --room-perms PERM')
+    .describe('H', 'For debugging/development. Defaults to floobits.com.')
     .default('H', parsed_url.host || 'floobits.com')
+    .describe('p', 'For debugging/development. Defaults to 3148.')
     .default('p', 3448)
+    .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
     .default('u', floorc.username)
+    .describe('s', 'Your Floobits secret. Defaults to your ~/.floorc defined secret.')
     .default('s', floorc.secret)
+    .describe('w', 'The Floobits Workspace')
     .default('w', parsed_url.workspace)
+    .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
     .default('o', parsed_url.owner || floorc.username)
-    .demand(['H', 'p', 'o', 'w', 'u', 's'])
+    .demand(['H', 'p', 'w', 'u', 's'])
     .argv;
 };
 
@@ -90,6 +96,12 @@ exports.run = function () {
     data,
     parsed_url,
     args = parse_args();
+
+  if (args.help) {
+    optimist.showHelp();
+    process.exit(0);
+  }
+  args.o = args.o || args.u;
 
   floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
   console.log('watching cwd', process.cwd());
