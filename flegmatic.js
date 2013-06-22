@@ -93,8 +93,6 @@ var parse_args = function () {
 
 exports.run = function () {
   var cwd = process.cwd(),
-    floo_conn,
-    floo_listener,
     floorc,
     floo_file,
     data,
@@ -119,9 +117,8 @@ exports.run = function () {
     process.exit(0);
   }
 
-
   if (args['delete']) {
-    series.push(api.del.bind(api, args.H, args.o, args.w));
+    series.push(api.del.bind(api, args.H, args.o, args.s, args.w));
   }
 
   if (args.create) {
@@ -129,9 +126,27 @@ exports.run = function () {
   }
 
   async.series(series, function(err){
+    var parallel = {},
+      floo_conn,
+      floo_listener;
+
+    if (err){
+      return console.error(err);
+    }
     floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
-    console.log('watching cwd', process.cwd());
-    floo_listener = new listener.Listener(process.cwd(), floo_conn);
-    floo_conn.connect();
+
+    parallel.conn = function(cb){
+      floo_conn.connect(cb);
+    };
+
+    parallel.listen = function(cb){
+      floo_listener = new listener.Listener(process.cwd(), floo_conn, cb);
+    };
+
+    async.parallel(parallel, function(err){
+      if (err) return console.error(err);
+      console.log('watching cwd', process.cwd());
+      floo_conn.start_syncing(floo_listener);
+    });
   });
 };
