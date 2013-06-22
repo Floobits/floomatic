@@ -9,8 +9,10 @@ var DMP = new dmp_module.diff_match_patch();
 var optimist = require('optimist');
 var _ = require("underscore");
 
-var floo_connection = require("./lib/floo_connection");
-var listener = require("./lib/listener");
+var lib = require('./lib');
+var floo_connection = lib.floo_connection;
+var listener = lib.listener;
+var api = lib.api;
 
 
 var parse_url = function (url, cb) {
@@ -70,7 +72,7 @@ var parse_args = function(){
   var parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create-room --delete-room --recreate-room --room-perms PERM')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create-workspace --delete-workspace --recreate-workspace --workspace-perms PERM')
     .describe('H', 'For debugging/development. Defaults to floobits.com.')
     .default('H', parsed_url.host || 'floobits.com')
     .describe('p', 'For debugging/development. Defaults to 3148.')
@@ -102,6 +104,13 @@ exports.run = function () {
     process.exit(0);
   }
   args.o = args.o || args.u;
+
+  if (args['delete-workspace']){
+    api.del(args.H, args.o, args.w, cb);
+  }
+  if (args['create-workspace']){
+    api.create(args.H, args.o, args.w, cb);
+  }
 
   floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
   console.log('watching cwd', process.cwd());
