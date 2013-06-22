@@ -6,6 +6,7 @@ var path = require('path');
 var async = require('async');
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
+var optimist = require('optimist');
 var _ = require("underscore");
 
 var floo_connection = require("./lib/floo_connection");
@@ -26,17 +27,10 @@ var parse_url = function (url, cb) {
   return parsed_url;
 };
 
-
-exports.run = function () {
-  var cwd = process.cwd(),
-    floo_conn,
-    floo_listener,
-    floorc = {},
+var parse_floorc = function(){
+  var floorc = {},
     floorc_path,
-    floorc_lines,
-    floo_file,
-    data,
-    parsed_url;
+    floorc_lines;
 
   try {
     floorc_path = path.join(process.env[(process.platform === "win32") ? "USERPROFILE" : "HOME"], ".floorc");
@@ -55,8 +49,33 @@ exports.run = function () {
     });
   } catch (e) {
     console.error("no ~/.floorc file", e);
-    process.exit(1);
   }
+  return floorc;
+};
+
+var parse_args = function(){
+  var floorc = parse_floorc();
+
+  return optimist
+    .usage('Usage: $0 -h [HOST] -p [PORT] -o [OWNER] -s [SECRET] -u [username] --create-room --delete-room')
+    .default('h', 'floobits.com')
+    .default('p', 3448)
+    .default('u', floorc.username)
+    .default('o', floorc.username)
+    .default('s', floorc.secret)
+    .demand(['h','p', 'o', 's', 'u'])
+    .argv;
+};
+
+exports.run = function () {
+  var cwd = process.cwd(),
+    floo_conn,
+    floo_listener,
+    floorc,
+    floo_file,
+    data,
+    parsed_url,
+    args = parse_args();
 
   try {
     floo_file = fs.readFileSync(".floo");
@@ -70,5 +89,6 @@ exports.run = function () {
   floo_conn = new floo_connection.FlooConnection(parsed_url);
   console.log('watching cwd', process.cwd());
   floo_listener = new listener.Listener(process.cwd(), floo_conn);
-  floo_conn.connect(floorc.username, floorc.secret);
+
+  floo_conn.connect(args.u, args.s);
 };
