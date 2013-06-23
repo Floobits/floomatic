@@ -38,9 +38,11 @@ var parse_floorc = function () {
       var space,
         key,
         value;
+      /*jslint regexp: true */
       if (line.match(/^\s*#.*/)) {
         return;
       }
+      /*jslint regexp: false */
       space = line.indexOf(" ");
       key = line.slice(0, space).toLowerCase();
       value = line.slice(space + 1);
@@ -85,8 +87,8 @@ var parse_args = function () {
     .describe('create', 'Creates a new workspace if possible (any value passed will override -w) If not -w, defaults to dirname.')
     .describe('delete', 'Deletes the workspace if possible (can be used with --create to curb stomp).')
     .describe('perms', 'Used with --create. 0 = private, 1 = readable by anyone, 2 = writeable by anyone.')
-    .describe('H', 'For debugging/development. Defaults to floobits.com.')
-    .describe('p', 'For debugging/development. Defaults to 3148.')
+    .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
+    .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
     .demand(['H', 'p', 'u', 's'])
     .argv;
 };
@@ -106,12 +108,12 @@ exports.run = function () {
   }
 
   args.o = args.o || args.u;
-  if (args.create && args.create === true){
+  if (args.create && args.create === true) {
     args.create = path.basename(process.cwd());
   }
   args.w = args.create || args.w;
 
-  if (!args.w){
+  if (!args.w) {
     console.error('I need a workspace name.');
     optimist.showHelp();
     process.exit(0);
@@ -125,26 +127,28 @@ exports.run = function () {
     series.push(api.create.bind(api, args.H, args.o, args.s, args.w, args.perms));
   }
 
-  async.series(series, function(err){
+  async.series(series, function (err) {
     var parallel = {},
       floo_conn,
       floo_listener;
 
-    if (err){
+    if (err) {
       return console.error(err);
     }
     floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
 
-    parallel.conn = function(cb){
+    parallel.conn = function (cb) {
       floo_conn.connect(cb);
     };
 
-    parallel.listen = function(cb){
+    parallel.listen = function (cb) {
       floo_listener = new listener.Listener(process.cwd(), floo_conn, cb);
     };
 
-    async.parallel(parallel, function(err){
-      if (err) return console.error(err);
+    async.parallel(parallel, function (err) {
+      if (err) {
+        return console.error(err);
+      }
       console.log('watching cwd', process.cwd());
       floo_conn.start_syncing(floo_listener);
     });
