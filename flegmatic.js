@@ -73,7 +73,7 @@ var parse_args = function () {
     parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --perms PERM')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --readonly --create [name] --delete --perms PERM')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -85,10 +85,10 @@ var parse_args = function () {
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
     .default('o', parsed_url.owner || floorc.username)
     .describe('create', 'Creates a new workspace if possible (any value passed will override -w) If not -w, defaults to dirname.')
-    .describe('delete', 'Deletes the workspace if possible (can be used with --create to curb stomp).')
-    .describe('perms', 'Used with --create. 0 = private, 1 = readable by anyone, 2 = writeable by anyone.')
+    .describe('delete', 'Deletes the workspace if possible (can be used with --create to overwrite an existing workspace).')
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
+    .describe('readonly', 'Will not send patches for local modifications (Always enabled for OS X).')
     .demand(['H', 'p', 'u', 's'])
     .argv;
 };
@@ -142,15 +142,18 @@ exports.run = function () {
     };
 
     parallel.listen = function (cb) {
-      floo_listener = new listener.Listener(process.cwd(), floo_conn, cb);
+      floo_listener = new listener.Listener(process.cwd(), floo_conn);
+      floo_listener.inspect(cb);
     };
 
     async.parallel(parallel, function (err) {
       if (err) {
         return console.error(err);
       }
-      console.log('watching cwd', process.cwd());
-      floo_conn.start_syncing(floo_listener);
+      // if (!args.readonly && process.platform !== 'darwin') {
+      //   floo_listener.fs_watch();
+      // }
+      floo_conn.start_syncing(floo_listener, args.create);
     });
   });
 };
