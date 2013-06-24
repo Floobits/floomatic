@@ -6,15 +6,17 @@ var path = require('path');
 var async = require('async');
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
-var open = require("open");
 var optimist = require('optimist');
 var _ = require("underscore");
 
 var lib = require('./lib');
+var log = lib.log;
 var floo_connection = lib.floo_connection;
 var listener = lib.listener;
 var api = lib.api;
 
+
+log.set_log_level("debug");
 
 var parse_url = function (url, cb) {
   var parsed_url = {};
@@ -52,7 +54,7 @@ var parse_floorc = function () {
       floorc[key] = value;
     });
   } catch (e) {
-    console.error("no ~/.floorc file", e);
+    log.error("no ~/.floorc file", e);
   }
   return floorc;
 };
@@ -68,7 +70,7 @@ var parse_dot_floo = function () {
     data = JSON.parse(floo_file);
     parsed_url = parse_url(data.url);
   } catch (e) {
-    console.log("no .floo file in current directory");
+    log.log("no .floo file in current directory");
   }
   return parsed_url;
 };
@@ -120,7 +122,7 @@ exports.run = function () {
   args.w = args.create || args.w;
 
   if (!args.w) {
-    console.error('I need a workspace name.');
+    log.error('I need a workspace name.');
     optimist.showHelp();
     process.exit(0);
   }
@@ -139,7 +141,7 @@ exports.run = function () {
       floo_listener;
 
     if (err) {
-      return console.error(err);
+      return log.error(err);
     }
     floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
 
@@ -154,7 +156,7 @@ exports.run = function () {
 
     async.parallel(parallel, function (err) {
       if (err) {
-        return console.error(err);
+        return log.error(err);
       }
       // if (!args.readonly && process.platform !== 'darwin') {
       //   floo_listener.fs_watch();
