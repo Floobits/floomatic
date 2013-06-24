@@ -6,6 +6,7 @@ var path = require('path');
 var async = require('async');
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
+var open = require("open");
 var optimist = require('optimist');
 var _ = require("underscore");
 
@@ -33,7 +34,9 @@ var parse_floorc = function () {
 
   try {
     floorc_path = path.join(process.env[(process.platform === "win32") ? "USERPROFILE" : "HOME"], ".floorc");
+    /*jslint stupid: true */
     floorc_lines = fs.readFileSync(floorc_path, "utf-8").split("\n");
+    /*jslint stupid: false */
     _.each(floorc_lines, function (line) {
       var space,
         key,
@@ -59,7 +62,9 @@ var parse_dot_floo = function () {
     floo_file,
     parsed_url = {};
   try {
+    /*jslint stupid: true */
     floo_file = fs.readFileSync(".floo");
+    /*jslint stupid: false */
     data = JSON.parse(floo_file);
     parsed_url = parse_url(data.url);
   } catch (e) {
@@ -73,7 +78,7 @@ var parse_args = function () {
     parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --readonly --create [name] --delete --perms PERM')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --send-local')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -84,11 +89,12 @@ var parse_args = function () {
     .default('w', parsed_url.workspace)
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
     .default('o', parsed_url.owner || floorc.username)
-    .describe('create', 'Creates a new workspace if possible (any value passed will override -w) If not -w, defaults to dirname.')
+    .describe('create', 'Creates a new workspace if possible (any value passed will override -w) If not -w, defaults to the dirname.')
     .describe('delete', 'Deletes the workspace if possible (can be used with --create to overwrite an existing workspace).')
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
-    .describe('readonly', 'Will not send patches for local modifications (Always enabled for OS X).')
+    .describe('send-local', "Overwrites the workspace's files with your local files on startup.")
+    // .describe('readonly', 'Will not send patches for local modifications (Always enabled for OS X).')
     .demand(['H', 'p', 'u', 's'])
     .argv;
 };
@@ -153,7 +159,7 @@ exports.run = function () {
       // if (!args.readonly && process.platform !== 'darwin') {
       //   floo_listener.fs_watch();
       // }
-      floo_conn.start_syncing(floo_listener, args.create);
+      floo_conn.start_syncing(floo_listener, args.create || args['send-local']);
     });
   });
 };
