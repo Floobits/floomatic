@@ -13,9 +13,6 @@ var _ = require("underscore");
 
 var lib = require("./lib");
 var log = lib.log;
-var floo_connection = lib.floo_connection;
-var listener = lib.listener;
-var hooks = lib.hooks;
 var api = lib.api;
 
 log.set_log_level("debug");
@@ -153,15 +150,15 @@ exports.run = function () {
     if (err) {
       return log.error(err);
     }
-    floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
+    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
 
     parallel.conn = function (cb) {
       floo_conn.connect(cb);
     };
 
     parallel.listen = function (cb) {
-      var hooker = new Hooks(args.hooks);
-      floo_listener = new listener.Listener(process.cwd(), floo_conn, hooker);
+      var hooker = new lib.Hooks(args.hooks);
+      floo_listener = new lib.Listener(process.cwd(), floo_conn, hooker);
       floo_listener.inspect(cb);
     };
 
