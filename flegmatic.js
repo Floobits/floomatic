@@ -1,15 +1,17 @@
 #!/usr/bin/env node
-var fs = require('fs');
-var tls = require('tls');
-var path = require('path');
+var fs = require("fs");
+var net = require("net");
+var tls = require("tls");
+var path = require("path");
+var url = require("url");
 
-var async = require('async');
+var async = require("async");
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
-var optimist = require('optimist');
+var optimist = require("optimist");
 var _ = require("underscore");
 
-var lib = require('./lib');
+var lib = require("./lib");
 var log = lib.log;
 var floo_connection = lib.floo_connection;
 var listener = lib.listener;
@@ -18,15 +20,21 @@ var api = lib.api;
 
 log.set_log_level("debug");
 
-var parse_url = function (url, cb) {
-  var parsed_url = {};
+var parse_url = function (workspace_url) {
+  var parsed_url,
+    re = /\/r\/([\-\@\+\.\w]+)\/([\-\w]+)/,
+    res;
 
-  parsed_url.host = "floobits.com";
-  parsed_url.port = 3448;
-  parsed_url.klass = tls;
-  parsed_url.workspace = "rax-demo";
-  parsed_url.owner = "kansface";
-  return parsed_url;
+  parsed_url = url.parse(workspace_url);
+  res = parsed_url.path.match(re);
+
+  return {
+    host: parsed_url.hostname,
+    port: parsed_url.protocol === "http" ? 3148 : 3448,
+    klass: parsed_url.protocol === "http" ? net : tls,
+    owner: res && res[1],
+    workspace: res && res[2]
+  };
 };
 
 var parse_floorc = function () {
