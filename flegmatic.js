@@ -15,7 +15,7 @@ var lib = require("./lib");
 var log = lib.log;
 var api = lib.api;
 
-log.set_log_level("debug");
+log.set_log_level("log");
 
 var parse_url = function (workspace_url) {
   var parsed_url,
@@ -85,7 +85,7 @@ var parse_args = function () {
     parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --send-local --hooks [path_to_hooks]')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --send-local --hooks [path_to_hooks] --verbose')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -116,6 +116,10 @@ exports.run = function () {
     series = [],
     raw_hooks = {},
     args = parse_args();
+
+  if (args.verbose) {
+    log.set_log_level("debug");
+  }
 
   if (args.help || args.h) {
     optimist.showHelp();
