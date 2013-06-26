@@ -85,7 +85,7 @@ var parse_args = function () {
     parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --send-local --hooks [path_to_hooks] --verbose')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --read-only --send-local --hooks [path_to_hooks] --verbose')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -155,7 +155,7 @@ exports.run = function () {
     if (err) {
       return log.error(err);
     }
-    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s, args['send-local'], hooker);
+    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s, args['read-only'], hooker);
 
     parallel.conn = function (cb) {
       floo_conn.connect(cb);

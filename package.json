@@ -9,7 +9,7 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.0.8",
+  "version": "0.0.10",
   "dependencies": {
     "async": "0.2.x",
     "diff_match_patch": "0.1.x",
