@@ -129,8 +129,8 @@ exports.run = function () {
   args.w = args.create || args.w;
 
   if (!args.w) {
-    log.error('I need a workspace name.');
     optimist.showHelp();
+    log.error('I need a workspace name.');
     process.exit(0);
   }
 
