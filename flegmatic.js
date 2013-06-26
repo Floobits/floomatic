@@ -13,10 +13,7 @@ var _ = require("underscore");
 
 var lib = require("./lib");
 var log = lib.log;
-var floo_connection = lib.floo_connection;
-var listener = lib.listener;
 var api = lib.api;
-
 
 log.set_log_level("debug");
 
@@ -88,7 +85,7 @@ var parse_args = function () {
     parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --send-local')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --send-local --hooks [path_to_hooks]')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -104,6 +101,7 @@ var parse_args = function () {
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
     .describe('send-local', "Overwrites the workspace's files with your local files on startup.")
+    .describe('hooks', "Hooks to run after stuff is changed.  Must be a node require-able file")
     // .describe('readonly', 'Will not send patches for local modifications (Always enabled for OS X).')
     .demand(['H', 'p', 'u', 's'])
     .argv;
@@ -116,6 +114,7 @@ exports.run = function () {
     data,
     parsed_url,
     series = [],
+    raw_hooks = {},
     args = parse_args();
 
   if (args.help || args.h) {
@@ -151,14 +150,15 @@ exports.run = function () {
     if (err) {
       return log.error(err);
     }
-    floo_conn = new floo_connection.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
+    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
 
     parallel.conn = function (cb) {
       floo_conn.connect(cb);
     };
 
     parallel.listen = function (cb) {
-      floo_listener = new listener.Listener(process.cwd(), floo_conn);
+      var hooker = new lib.Hooks(args.hooks);
+      floo_listener = new lib.Listener(process.cwd(), floo_conn, hooker);
       floo_listener.inspect(cb);
     };
 
