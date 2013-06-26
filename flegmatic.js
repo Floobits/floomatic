@@ -59,7 +59,7 @@ var parse_floorc = function () {
       floorc[key] = value;
     });
   } catch (e) {
-    log.error("no ~/.floorc file", e);
+    log.error("no ~/.floorc file was found");
   }
   return floorc;
 };
@@ -145,19 +145,19 @@ exports.run = function () {
   async.series(series, function (err) {
     var parallel = {},
       floo_conn,
-      floo_listener;
+      floo_listener,
+      hooker = new lib.Hooks(args.hooks);
 
     if (err) {
       return log.error(err);
     }
-    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s);
+    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s, args['send-local'], hooker);
 
     parallel.conn = function (cb) {
       floo_conn.connect(cb);
     };
 
     parallel.listen = function (cb) {
-      var hooker = new lib.Hooks(args.hooks);
       floo_listener = new lib.Listener(process.cwd(), floo_conn, hooker);
       floo_listener.inspect(cb);
     };
