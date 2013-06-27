@@ -85,7 +85,7 @@ var parse_args = function () {
     parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --create [name] --delete --read-only --send-local --hooks [path_to_hooks] --verbose')
+    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --url [url] --create [name] --delete --read-only --send-local --hooks [path_to_hooks] --verbose')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
@@ -132,6 +132,12 @@ exports.run = function () {
   }
   args.w = args.create || args.w;
 
+  if (args.url) {
+    parsed_url = parse_url(args.url);
+    args.w = args.w || parsed_url.workspace;
+    args.o = args.o || parsed_url.owner;
+  }
+
   if (!args.w) {
     optimist.showHelp();
     log.error('I need a workspace name.');
@@ -158,6 +164,7 @@ exports.run = function () {
     floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s, args['read-only'], hooker);
 
     parallel.conn = function (cb) {
+      log.log('Joining', 'https://' + args.H + '/' + args.o + '/' + args.w);
       floo_conn.connect(cb);
     };
 
