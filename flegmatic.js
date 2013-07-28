@@ -177,9 +177,13 @@ exports.run = function () {
       if (err) {
         return log.error(err);
       }
-      // if (!args.readonly && process.platform !== 'darwin') {
-      //   floo_listener.fs_watch();
-      // }
+      if (!args.readonly) {
+        if (process.platform === 'darwin') {
+          log.error("Sorry, node.js's file watcher doesn't work with more than 200 files on OS X. Local changes will not be synced to the workspace.");
+        } else {
+          floo_listener.fs_watch();
+        }
+      }
       floo_conn.start_syncing(floo_listener, args.create || args['send-local']);
     });
   });
