@@ -157,7 +157,7 @@ exports.run = function () {
   }
 
   if (args.create) {
-    series.push(api.create.bind(api, args.H, args.o, args.s, args.w, args.perms));
+    series.push(api.create.bind(api, args.H, args.u, args.o, args.s, args.w, args.perms));
   }
 
   if (!args['read-only']) {
