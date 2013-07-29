@@ -4,12 +4,14 @@ var net = require("net");
 var tls = require("tls");
 var path = require("path");
 var url = require("url");
+var util = require("util");
 
 var async = require("async");
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
+var open_url = require("open");
 var optimist = require("optimist");
-var _ = require("underscore");
+var _ = require("lodash");
 
 var lib = require("./lib");
 var log = lib.log;
@@ -30,8 +32,14 @@ var parse_url = function (workspace_url) {
     port: parsed_url.protocol === "http" ? 3148 : 3448,
     klass: parsed_url.protocol === "http" ? net : tls,
     owner: res && res[1],
+    secure: parsed_url.protocol === "https",
     workspace: res && res[2]
   };
+};
+
+var to_browser_url = function (secure, hostname, owner, workspace_name) {
+  var protocol = secure ? "https" : "http";
+  return util.format("%s://%s/r/%s/%s/", protocol, hostname, owner, workspace_name);
 };
 
 var parse_floorc = function () {
@@ -102,7 +110,7 @@ var parse_args = function () {
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
     .describe('send-local', "Overwrites the workspace's files with your local files on startup.")
     .describe('hooks', "Hooks to run after stuff is changed.  Must be a node require-able file")
-    // .describe('readonly', 'Will not send patches for local modifications (Always enabled for OS X).')
+    .describe('read-only', 'Will not send patches for local modifications (Always enabled for OS X).')
     .demand(['H', 'p', 'u', 's'])
     .argv;
 };
@@ -152,6 +160,10 @@ exports.run = function () {
     series.push(api.create.bind(api, args.H, args.o, args.s, args.w, args.perms));
   }
 
+  if (!args['read-only']) {
+    series.push(open_url.bind(null, to_browser_url(args.p === 3448, args.H, args.o, args.w)));
+  }
+
   async.series(series, function (err) {
     var parallel = {},
       floo_conn,
@@ -177,9 +189,13 @@ exports.run = function () {
       if (err) {
         return log.error(err);
       }
-      // if (!args.readonly && process.platform !== 'darwin') {
-      //   floo_listener.fs_watch();
-      // }
+      if (!args['read-only']) {
+        if (process.platform === 'darwin') {
+          log.error("Sorry, node.js's file watcher doesn't work with more than 200 files on OS X. Local changes will not be synced to the workspace.");
+        } else {
+          floo_listener.fs_watch();
+        }
+      }
       floo_conn.start_syncing(floo_listener, args.create || args['send-local']);
     });
   });
