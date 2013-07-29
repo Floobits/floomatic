@@ -11,7 +11,8 @@
   ],
   "version": "0.0.12",
   "optionalDependencies": {
-    "fsevents": ">=0.1.5"
+    "fsevents": ">=0.1.5",
+    "native-diff-match-patch": ">=0.0.4"
   },
   "dependencies": {
     "async": "0.2.x",
