@@ -153,11 +153,11 @@ exports.run = function () {
   }
 
   if (args['delete']) {
-    series.push(api.del.bind(api, args.H, args.o, args.s, args.w));
+    series.push(api.del.bind(api, args.H, args.u, args.o, args.s, args.w));
   }
 
   if (args.create) {
-    series.push(api.create.bind(api, args.H, args.o, args.s, args.w, args.perms));
+    series.push(api.create.bind(api, args.H, args.u, args.o, args.s, args.w, args.perms));
   }
 
   if (!args['read-only']) {
@@ -165,38 +165,12 @@ exports.run = function () {
   }
 
   async.series(series, function (err) {
-    var parallel = {},
-      floo_conn,
-      floo_listener,
-      hooker = new lib.Hooks(args.hooks);
+    var floo_conn;
 
     if (err) {
       return log.error(err);
     }
-    floo_conn = new lib.FlooConnection(args.H, args.p, args.o, args.w, args.u, args.s, args['read-only'], hooker);
-
-    parallel.conn = function (cb) {
-      log.log('Joining', 'https://' + args.H + '/' + args.o + '/' + args.w);
-      floo_conn.connect(cb);
-    };
-
-    parallel.listen = function (cb) {
-      floo_listener = new lib.Listener(process.cwd(), floo_conn, hooker);
-      floo_listener.inspect(cb);
-    };
-
-    async.parallel(parallel, function (err) {
-      if (err) {
-        return log.error(err);
-      }
-      if (!args['read-only']) {
-        if (process.platform === 'darwin') {
-          log.error("Sorry, node.js's file watcher doesn't work with more than 200 files on OS X. Local changes will not be synced to the workspace.");
-        } else {
-          floo_listener.fs_watch();
-        }
-      }
-      floo_conn.start_syncing(floo_listener, args.create || args['send-local']);
-    });
+    floo_conn = new lib.FlooConnection(args);
+    floo_conn.connect();
   });
 };
