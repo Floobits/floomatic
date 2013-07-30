@@ -164,6 +164,10 @@ exports.run = function () {
     series.push(open_url.bind(null, to_browser_url(args.p === 3448, args.H, args.o, args.w)));
   }
 
+  series.push(function (cb) {
+    cb();
+  });
+
   async.series(series, function (err) {
     var floo_conn;
 
