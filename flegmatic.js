@@ -76,18 +76,12 @@ var parse_floorc = function () {
 };
 
 var parse_dot_floo = function () {
-  var data,
-    floo_file,
-    parsed_url = {};
-  try {
-    /*jslint stupid: true */
-    floo_file = fs.readFileSync(".floo");
-    /*jslint stupid: false */
-    data = JSON.parse(floo_file);
-    parsed_url = parse_url(data.url);
-  } catch (e) {
-    log.log("no .floo file in current directory");
-  }
+  var floo_file,
+    parsed_url = {},
+    data = lib.utils.load_floo();
+
+  parsed_url = data.url && parse_url(data.url);
+
   return parsed_url;
 };
 
