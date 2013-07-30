@@ -23,10 +23,13 @@ var parse_url = function (workspace_url) {
   var parsed_url,
     re = /\/r\/([\-\@\+\.\w]+)\/([\-\w]+)/,
     res;
-
-  parsed_url = url.parse(workspace_url);
-  res = parsed_url.path.match(re);
-
+  try {
+    parsed_url = url.parse(workspace_url);
+    res = parsed_url.path.match(re);
+  } catch (e) {
+    log.error('The workspace must be a valid url:', workspace_url);
+    process.exit(1);
+  }
   return {
     host: parsed_url.hostname,
     port: parsed_url.protocol === "http" ? 3148 : 3448,
@@ -88,42 +91,35 @@ var parse_dot_floo = function () {
   return parsed_url;
 };
 
-var parse_args = function () {
-  var floorc = parse_floorc(),
-    parsed_url = parse_dot_floo();
+var parse_args = function (floorc) {
+  var parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 -o [owner] -w [workspace] -u [username] -s [secret] --url [url] --create [name] --delete --read-only --send-local --hooks [path_to_hooks] --verbose')
+    .usage('Usage: $0 --join [url] --share -o [owner] -w [workspace] --read-only [path_to_hooks] --verbose [path_to_sync]')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
-    .describe('u', 'Your Floobits username. Defaults to your ~/.floorc defined username.')
-    .default('u', floorc.username)
-    .describe('s', 'Your Floobits secret. Defaults to your ~/.floorc defined secret.')
-    .default('s', floorc.secret)
-    .describe('w', 'The Floobits Workspace')
+    .describe('join', "The URL of the workspace to join (cannot be used with share).")
+    .describe('share', 'Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.')
+    .describe('w', 'The Floobits Workspace.')
     .default('w', parsed_url.workspace)
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
     .default('o', parsed_url.owner || floorc.username)
-    .describe('create', 'Creates a new workspace if possible (any value passed will override -w) If not -w, defaults to the dirname.')
-    .describe('delete', 'Deletes the workspace if possible (can be used with --create to overwrite an existing workspace).')
+    .describe('read-only', 'Will not send patches for local modifications (Always enabled for OS X).')
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
-    .describe('send-local', "Overwrites the workspace's files with your local files on startup.")
-    .describe('hooks', "Hooks to run after stuff is changed.  Must be a node require-able file")
-    .describe('read-only', 'Will not send patches for local modifications (Always enabled for OS X).')
-    .demand(['H', 'p', 'u', 's'])
+    .demand(['H', 'p'])
     .argv;
 };
 
 exports.run = function () {
   var cwd = process.cwd(),
-    floorc,
+    floorc = parse_floorc(),
     floo_file,
     data,
     parsed_url,
     series = [function (cb) { cb(); }],
     raw_hooks = {},
-    args = parse_args();
+    args = parse_args(floorc);
 
   if (args.verbose) {
     log.set_log_level("debug");
@@ -134,14 +130,14 @@ exports.run = function () {
     process.exit(0);
   }
 
-  args.o = args.o || args.u;
-  if (args.create && args.create === true) {
-    args.create = path.basename(process.cwd());
+  args.o = args.o || floorc.username;
+  if (args.share && args.share === true) {
+    args.share = path.basename(process.cwd());
   }
-  args.w = args.create || args.w;
+  args.w = args.share || args.w;
 
-  if (args.url) {
-    parsed_url = parse_url(args.url);
+  if (args.join) {
+    parsed_url = parse_url(args.join);
     args.w = args.w || parsed_url.workspace;
     args.o = args.o || parsed_url.owner;
   }
@@ -152,12 +148,8 @@ exports.run = function () {
     process.exit(0);
   }
 
-  if (args['delete']) {
-    series.push(api.del.bind(api, args.H, args.u, args.o, args.s, args.w));
-  }
-
-  if (args.create) {
-    series.push(api.create.bind(api, args.H, args.u, args.o, args.s, args.w, args.perms));
+  if (args.share) {
+    series.push(api.create.bind(api, args.H, floorc.username, args.o, floorc.secret, args.w, args.perms));
   }
 
   if (!args['read-only']) {
@@ -170,7 +162,7 @@ exports.run = function () {
     if (err) {
       return log.error(err);
     }
-    floo_conn = new lib.FlooConnection(args);
+    floo_conn = new lib.FlooConnection(floorc, args);
     floo_conn.connect();
   });
 };
