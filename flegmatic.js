@@ -80,7 +80,7 @@ var parse_dot_floo = function () {
     parsed_url = {},
     data = lib.utils.load_floo();
 
-  parsed_url = data.url && parse_url(data.url);
+  parsed_url = data.url ? parse_url(data.url) : {};
 
   return parsed_url;
 };
