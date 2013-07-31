@@ -132,8 +132,8 @@ exports.run = function () {
 
   if (args.join) {
     parsed_url = parse_url(args.join);
-    args.w = args.w || parsed_url.workspace;
-    args.o = args.o || parsed_url.owner;
+    args.w = parsed_url.workspace;
+    args.o = parsed_url.owner;
   }
 
   if (!args.w) {
