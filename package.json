@@ -1,15 +1,15 @@
 {
-  "name": "flegmatic",
-  "homepage": "https://github.com/Floobits/flegmatic/",
+  "name": "floomatic",
+  "homepage": "https://github.com/Floobits/floomatic/",
   "repository": {
     "type": "git",
-    "url": "git://github.com:Floobits/flegmatic.git"
+    "url": "git://github.com:Floobits/floomatic.git"
   },
   "contributors": [
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.2.2",
+  "version": "0.2.3",
   "optionalDependencies": {
     "fsevents": ">=0.1.5",
     "native-diff-match-patch": ">=0.0.4"
@@ -29,21 +29,21 @@
   },
   "preferGlobal": true,
   "bin": {
-    "flegmatic": "./bin/flegmatic"
+    "floomatic": "./bin/floomatic"
   },
   "directories": {
     "lib": "./lib"
   },
   "scripts": {
-    "start": "./bin/flegmatic"
+    "start": "./bin/floomatic"
   },
   "bugs": {
-    "url": "https://github.com/Floobits/flegmatic/issues"
+    "url": "https://github.com/Floobits/floomatic/issues"
   },
   "licenses": [
     {
       "type": "Apache 2.0",
-      "url": "https://github.com/Floobits/flegmatic/blob/master/LICENSE"
+      "url": "https://github.com/Floobits/floomatic/blob/master/LICENSE"
     }
   ]
 }
