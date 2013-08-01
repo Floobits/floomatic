@@ -9,7 +9,7 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.2.5",
+  "version": "0.2.6",
   "optionalDependencies": {
     "fsevents": ">=0.1.5",
     "native-diff-match-patch": ">=0.0.4"
