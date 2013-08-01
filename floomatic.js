@@ -6,6 +6,7 @@ var path = require("path");
 var url = require("url");
 var util = require("util");
 
+var mkdirp = require('mkdirp');
 var async = require("async");
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
@@ -89,7 +90,7 @@ var parse_args = function (floorc) {
   var parsed_url = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 --join [url] --share -o [owner] -w [workspace] --read-only [path_to_hooks] --verbose [path_to_sync]')
+    .usage('Usage: $0 --join [url] --share -o [owner] -w [workspace] --read-only --verbose [path_to_sync]')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
     .describe('join', "The URL of the workspace to join (cannot be used with share).")
@@ -113,7 +114,16 @@ exports.run = function () {
     parsed_url,
     series = [function (cb) { cb(); }],
     raw_hooks = {},
-    args = parse_args(floorc);
+    args = parse_args(floorc),
+    _path;
+
+  if (args._.length === 0) {
+    _path = process.cwd();
+  } else if (args._.length === 1) {
+    _path = args._[0];
+  } else {
+    throw new Error("Invalid arguments. Only one path is allowed.");
+  }
 
   if (args.verbose) {
     log.set_log_level("debug");
@@ -156,7 +166,9 @@ exports.run = function () {
     if (err) {
       return log.error(err);
     }
-    floo_conn = new lib.FlooConnection(floorc, args);
+
+    mkdirp.sync(_path);
+    floo_conn = new lib.FlooConnection(_path, floorc, args);
     floo_conn.connect();
   });
 };
