@@ -93,8 +93,9 @@ var parse_args = function (floorc) {
     .usage('Usage: $0 --join [url] --share -o [owner] -w [workspace] --read-only --verbose [path_to_sync]')
     .default('H', parsed_url.host || 'floobits.com')
     .default('p', 3448)
-    .describe('join', "The URL of the workspace to join (cannot be used with share).")
+    .describe('join', "The URL of the workspace to join (cannot be used with --share).")
     .describe('share', 'Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.')
+    .boolean('share')
     .describe('w', 'The Floobits Workspace.')
     .default('w', parsed_url.workspace)
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
@@ -102,6 +103,7 @@ var parse_args = function (floorc) {
     .describe('read-only', 'Will not send patches for local modifications (Always enabled for OS X).')
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
+    .describe('verbose', 'Enable debugging output.')
     .demand(['H', 'p'])
     .argv;
 };
@@ -118,12 +120,14 @@ exports.run = function () {
     _path;
 
   if (args._.length === 0) {
-    _path = process.cwd();
+    _path = cwd;
   } else if (args._.length === 1) {
     _path = args._[0];
   } else {
     throw new Error("Invalid arguments. Only one path is allowed.");
   }
+  _path = path.resolve(_path);
+  _path = path.normalize(_path);
 
   if (args.verbose) {
     log.set_log_level("debug");
@@ -136,7 +140,7 @@ exports.run = function () {
 
   args.o = args.o || floorc.username;
   if (args.share && args.share === true) {
-    args.share = path.basename(process.cwd());
+    args.share = _path;
   }
   args.w = args.share || args.w;
 
