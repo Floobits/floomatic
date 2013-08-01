@@ -117,7 +117,8 @@ exports.run = function () {
     series = [function (cb) { cb(); }],
     raw_hooks = {},
     args = parse_args(floorc),
-    _path;
+    _path,
+    on_room_info_cb = function () {};
 
   if (args._.length === 0) {
     _path = cwd;
@@ -161,7 +162,7 @@ exports.run = function () {
   }
 
   if (!args['read-only']) {
-    series.push(open_url.bind(null, to_browser_url(args.p === 3448, args.H, args.o, args.w)));
+    on_room_info_cb = open_url.bind(null, to_browser_url(args.p === 3448, args.H, args.o, args.w));
   }
 
   async.series(series, function (err) {
@@ -172,7 +173,7 @@ exports.run = function () {
     }
 
     mkdirp.sync(_path);
-    floo_conn = new lib.FlooConnection(_path, floorc, args);
+    floo_conn = new lib.FlooConnection(_path, floorc, args, on_room_info_cb);
     floo_conn.connect();
   });
 };
