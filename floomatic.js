@@ -104,6 +104,7 @@ var parse_args = function (floorc) {
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
     .describe('verbose', 'Enable debugging output.')
+    .describe('no-browser', "Don't try to open the web editor (--read-only mode also enables this)")
     .demand(['H', 'p'])
     .argv;
 };
@@ -161,7 +162,7 @@ exports.run = function () {
     series.push(api.create.bind(api, args.H, floorc.username, args.o, floorc.secret, args.w, args.perms));
   }
 
-  if (!args['read-only']) {
+  if (!args['read-only'] && !args['no-browser']) {
     on_room_info_cb = open_url.bind(null, to_browser_url(args.p === 3448, args.H, args.o, args.w));
   }
 
