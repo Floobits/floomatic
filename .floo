@@ -1,6 +1,6 @@
 {
     "url": "https://floobits.com/r/Floobits/flegmatic/",
     "hooks": {
-        "**": "echo HELLO #FLOO_HOOK_FILE"
+        "*": "echo HELLO #FLOO_HOOK_FILE"
     }
 }
