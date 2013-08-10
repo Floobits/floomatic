@@ -113,7 +113,6 @@ exports.run = function () {
   var cwd = process.cwd(),
     floorc = parse_floorc(),
     floo_file,
-    data,
     parsed_url,
     series = [function (cb) { cb(); }],
     raw_hooks = {},
