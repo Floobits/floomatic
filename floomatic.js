@@ -143,7 +143,7 @@ exports.run = function () {
   if (args.share && args.share === true) {
     args.share = _path;
   }
-  args.w = args.share || args.w;
+  args.w = _.compose(path.normalize, path.basename)(args.share || args.w);
 
   if (args.join) {
     parsed_url = parse_url(args.join);
