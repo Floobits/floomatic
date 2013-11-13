@@ -9,7 +9,7 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.2.11",
+  "version": "0.2.12",
   "optionalDependencies": {
     "fsevents": ">=0.1.5",
     "native-diff-match-patch": ">=0.0.4"
@@ -17,12 +17,12 @@
   "dependencies": {
     "async": "0.2.x",
     "diff_match_patch": "0.1.x",
-    "lodash": "1.2.x",
+    "lodash": "2.2.x",
+    "minimatch": "0.2.x",
     "mkdirp": "0.3.x",
     "open": "0.x",
     "optimist": "0.5.x",
-    "request": "2.x",
-    "minimatch": "0.2.x"
+    "request": "2.x"
   },
   "engines": {
     "node": ">=0.10.0"
