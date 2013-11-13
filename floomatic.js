@@ -27,7 +27,12 @@ var parse_url = function (workspace_url) {
   try {
     parsed_url = url.parse(workspace_url);
     res = parsed_url.path.match(re);
-  } catch (e) {
+  } catch (e) { }
+  try {
+    re = /\/([\-\@\+\.\w]+)\/([\-\w]+)/;
+    parsed_url = url.parse(workspace_url);
+    res = parsed_url.path.match(re);
+  } catch (e2) {
     log.error('The workspace must be a valid url:', workspace_url);
     process.exit(1);
   }
@@ -43,7 +48,7 @@ var parse_url = function (workspace_url) {
 
 var to_browser_url = function (secure, hostname, owner, workspace_name) {
   var protocol = secure ? "https" : "http";
-  return util.format("%s://%s/r/%s/%s/", protocol, hostname, owner, workspace_name);
+  return util.format("%s://%s/%s/%s/", protocol, hostname, owner, workspace_name);
 };
 
 var parse_floorc = function () {

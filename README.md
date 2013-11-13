@@ -22,11 +22,11 @@ Now you're all set!
 
 ### Join a workspace
 
-    floomatic --join https://floobits.com/r/owner_name/workspace_name
+    floomatic --join https://floobits.com/owner_name/workspace_name
 
 If you don't want to ship local changes to the Floobits server, use `--read-only`
 
-    floomatic --read-only --join https://floobits.com/r/owner_name/workspace_name
+    floomatic --read-only --join https://floobits.com/owner_name/workspace_name
 
 
 ## Hooks
@@ -34,7 +34,7 @@ If you don't want to ship local changes to the Floobits server, use `--read-only
 floomatic reads hooks from .floo in the base path of the shared directory. The format of .floo is:
 
     {
-        "url": "https://floobits.com/r/owner/workspace",
+        "url": "https://floobits.com/owner/workspace",
         "hooks": {
             "**": "/etc/init.d/apache restart",
             "static/less/**": "less static/less/*"
