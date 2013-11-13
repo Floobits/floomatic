@@ -2,5 +2,5 @@
     "hooks": {
         "*": "echo HELLO #FLOO_HOOK_FILE"
     }, 
-    "url": "https://floobits.com/r/Floobits/floomatic/"
+    "url": "https://floobits.com/Floobits/floomatic/"
 }
