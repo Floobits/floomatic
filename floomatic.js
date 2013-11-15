@@ -10,20 +10,21 @@ var mkdirp = require('mkdirp');
 var async = require("async");
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
+var log = require("floorine");
 var open_url = require("open");
 var optimist = require("optimist");
 var _ = require("lodash");
 
 var lib = require("./lib");
-var log = lib.log;
 var api = lib.api;
 
 log.set_log_level("log");
 
 var parse_url = function (workspace_url) {
   var parsed_url,
-    res, path,
-    exit = function() {
+    res,
+    path,
+    exit = function () {
       log.error('The workspace must be a valid url:', workspace_url);
       process.exit(1);
     };
