@@ -88,8 +88,7 @@ var parse_floorc = function () {
 };
 
 var parse_dot_floo = function () {
-  var floo_file,
-    parsed_url = {},
+  var parsed_url = {},
     data = lib.utils.load_floo();
 
   parsed_url = data.url ? parse_url(data.url) : {};
@@ -123,13 +122,10 @@ var parse_args = function (floorc) {
 exports.run = function () {
   var cwd = process.cwd(),
     floorc = parse_floorc(),
-    floo_file,
     parsed_url,
     series = [function (cb) { cb(); }],
-    raw_hooks = {},
     args = parse_args(floorc),
-    _path,
-    on_room_info_cb = function () {};
+    _path;
 
   if (args._.length === 0) {
     _path = cwd;
@@ -172,19 +168,24 @@ exports.run = function () {
     series.push(api.create.bind(api, args.H, floorc.username, args.o, floorc.secret, args.w, args.perms));
   }
 
-  if (!args['read-only'] && !args['no-browser']) {
-    on_room_info_cb = open_url.bind(null, to_browser_url(args.p === 3448, args.H, args.o, args.w));
-  }
-
   async.series(series, function (err) {
-    var floo_conn;
+    var floo_conn,
+      workspace_url = to_browser_url(args.p === 3448, args.H, args.o, args.w);
 
     if (err) {
       return log.error(err);
     }
 
     mkdirp.sync(_path);
-    floo_conn = new lib.FlooConnection(_path, floorc, args, on_room_info_cb);
+    floo_conn = new lib.FlooConnection(_path, floorc, args);
+
+    if (!args['read-only'] && !args['no-browser']) {
+      floo_conn.once('room_info', function () {
+        log.log("Opening browser to %s", workspace_url);
+        open_url(workspace_url);
+      });
+    }
+    log.log("Joining workspace %s", workspace_url);
     floo_conn.connect();
   });
 };
