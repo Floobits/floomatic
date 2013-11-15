@@ -22,27 +22,32 @@ log.set_log_level("log");
 
 var parse_url = function (workspace_url) {
   var parsed_url,
-    re = /\/r\/([\-\@\+\.\w]+)\/([\-\w]+)/,
-    res;
+    res, path,
+    exit = function() {
+      log.error('The workspace must be a valid url:', workspace_url);
+      process.exit(1);
+    };
+
   try {
     parsed_url = url.parse(workspace_url);
-    res = parsed_url.path.match(re);
-  } catch (e) { }
-  try {
-    re = /\/([\-\@\+\.\w]+)\/([\-\w]+)/;
-    parsed_url = url.parse(workspace_url);
-    res = parsed_url.path.match(re);
-  } catch (e2) {
-    log.error('The workspace must be a valid url:', workspace_url);
-    process.exit(1);
+  } catch (e) {
+    return exit();
   }
+  path = parsed_url.path;
+
+  res = path.match(/\/r\/([\-\@\+\.\w]+)\/([\-\w]+)/) || path.match(/\/([\-\@\+\.\w]+)\/([\-\w]+)/);
+
+  if (!res) {
+    return exit();
+  }
+
   return {
     host: parsed_url.hostname,
     port: parsed_url.protocol === "http" ? 3148 : 3448,
     klass: parsed_url.protocol === "http" ? net : tls,
-    owner: res && res[1],
+    owner: res[1],
     secure: parsed_url.protocol === "https",
-    workspace: res && res[2]
+    workspace: res[2]
   };
 };
 
