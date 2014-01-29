@@ -5,6 +5,7 @@ var tls = require("tls");
 var path = require("path");
 var url = require("url");
 var util = require("util");
+var os = require("os");
 
 var mkdirp = require('mkdirp');
 var async = require("async");
@@ -65,7 +66,7 @@ var parse_floorc = function () {
   try {
     floorc_path = path.join(process.env[(process.platform === "win32") ? "USERPROFILE" : "HOME"], ".floorc");
     /*jslint stupid: true */
-    floorc_lines = fs.readFileSync(floorc_path, "utf-8").split("\n");
+    floorc_lines = fs.readFileSync(floorc_path, "utf-8").split(os.EOL);
     /*jslint stupid: false */
     _.each(floorc_lines, function (line) {
       var space,
