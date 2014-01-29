@@ -1,10 +1,10 @@
 #!/bin/sh
 
 jslint \
---plusplus \
---sloppy \
---todo \
---node \
---nomen \
+--plusplus true \
+--sloppy true \
+--todo true \
+--node true \
 --indent 2 \
+--nomen true \
 *.js lib/*.js
