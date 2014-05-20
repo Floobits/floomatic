@@ -67,22 +67,28 @@ var parse_floorc = function () {
   try {
     floorc_path = path.join(process.env[(process.platform === "win32") ? "USERPROFILE" : "HOME"], ".floorc");
     /*jslint stupid: true */
-    floorc_lines = fs.readFileSync(floorc_path, "utf-8").split(os.EOL);
+    floorc_lines = fs.readFileSync(floorc_path, "utf-8").split(/\n|\r\n/g);
     /*jslint stupid: false */
     _.each(floorc_lines, function (line) {
-      var space,
+      var match,
         key,
         value;
       /*jslint regexp: true */
       if (line.match(/^\s*#.*/)) {
         return;
       }
+      match = line.match(/(\S+)\s+(\S+)/);
       /*jslint regexp: false */
-      space = line.indexOf(" ");
-      key = line.slice(0, space).toLowerCase();
-      value = line.slice(space + 1);
-      log.log("%s = %s", key, value);
+      if (!match) {
+        return;
+      }
+      key = match[1].trim().toLowerCase();
+      value = match[2].trim();
+      if (!key || !value) {
+        return;
+      }
       floorc[key] = value;
+      log.debug("%s = %s", key, value);
     });
   } catch (e) {
     log.error("no ~/.floorc file was found");
@@ -104,7 +110,7 @@ var parse_args = function (floorc) {
 
   return optimist
     .usage('Usage: $0 --join [url] --share -o [owner] -w [workspace] --read-only --verbose [path_to_sync]')
-    .default('H', parsed_url.host || 'floobits.com')
+    .default('H', parsed_url.host || floorc.default_host || 'floobits.com')
     .default('p', 3448)
     .describe('join', "The URL of the workspace to join (cannot be used with --share).")
     .describe('share', 'Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.')
