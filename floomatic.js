@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 var fs = require("fs");
 var net = require("net");
 var tls = require("tls");
@@ -55,7 +56,7 @@ var parse_url = function (workspace_url) {
 
 var to_browser_url = function (secure, hostname, owner, workspace_name) {
   var protocol = secure ? "https" : "http";
-  return util.format("%s://%s/%s/%s/", protocol, hostname, owner, workspace_name);
+  return util.format("%s://%s/%s/%s", protocol, hostname, owner, workspace_name);
 };
 
 var parse_floorc = function () {
@@ -80,6 +81,7 @@ var parse_floorc = function () {
       space = line.indexOf(" ");
       key = line.slice(0, space).toLowerCase();
       value = line.slice(space + 1);
+      log.log("%s = %s", key, value);
       floorc[key] = value;
     });
   } catch (e) {
