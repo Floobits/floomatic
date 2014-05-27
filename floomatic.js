@@ -37,8 +37,7 @@ var parse_url = function (workspace_url) {
     return exit();
   }
   path = parsed_url.path;
-
-  res = path.match(/\/r\/([\-\@\+\.\w]+)\/([\-\w]+)/) || path.match(/\/([\-\@\+\.\w]+)\/([\-\w]+)/);
+  res = path.match(/\/r\/([\-\@\+\.\w]+)\/([\-\@\+\.\w]+)/) || path.match(/\/([\-\@\+\.\w]+)\/([\-\@\+\.\w]+)/);
 
   if (!res) {
     return exit();
@@ -106,19 +105,19 @@ var parse_dot_floo = function () {
 };
 
 var parse_args = function (floorc) {
-  var parsed_url = parse_dot_floo();
+  var parsed_floo = parse_dot_floo();
 
   return optimist
-    .usage('Usage: $0 --join [url] --share -o [owner] -w [workspace] --read-only --verbose [path_to_sync]')
-    .default('H', parsed_url.host || floorc.default_host || 'floobits.com')
+    .usage('Usage: $0 --join [url] --share --read-only --verbose [path_to_sync]')
+    .default('H', parsed_floo.host || floorc.default_host || 'floobits.com')
     .default('p', 3448)
     .describe('join', "The URL of the workspace to join (cannot be used with --share).")
     .describe('share', 'Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.')
     .boolean('share')
     .describe('w', 'The Floobits Workspace.')
-    .default('w', parsed_url.workspace)
+    .default('w', parsed_floo.workspace)
     .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
-    .default('o', parsed_url.owner || floorc.username)
+    .default('o', parsed_floo.owner || floorc.username)
     .describe('read-only', 'Will not send patches for local modifications (Always enabled for OS X).')
     .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
     .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
