@@ -23,25 +23,29 @@ log.set_log_level("log");
 
 
 var parse_args = function (floorc) {
-  var parsed_floo = utils.parse_dot_floo();
+  var parsed_floo = utils.parse_dot_floo(),
+    default_host = floorc.default_host || "floobits.com",
+    username;
+
+  username = floorc.auth[default_host].username;
 
   return optimist
-    .usage('Usage: $0 --join [url] --share --read-only --verbose [path_to_sync]')
-    .default('H', parsed_floo.host || floorc.default_host || 'floobits.com')
-    .default('p', 3448)
-    .describe('join', "The URL of the workspace to join (cannot be used with --share).")
-    .describe('share', 'Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.')
-    .boolean('share')
-    .describe('w', 'The Floobits Workspace.')
-    .default('w', parsed_floo.workspace)
-    .describe('o', 'The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.')
-    .default('o', parsed_floo.owner || floorc.username)
-    .describe('read-only', 'Will not send patches for local modifications (Always enabled for OS X).')
-    .describe('H', 'Host to connect to. For debugging/development. Defaults to floobits.com.')
-    .describe('p', 'Port to use. For debugging/development. Defaults to 3448.')
-    .describe('verbose', 'Enable debugging output.')
-    .describe('no-browser', "Don't try to open the web editor (--read-only mode also enables this)")
-    .demand(['H', 'p'])
+    .usage("Usage: $0 --join [url] --share --read-only --verbose [path_to_sync]")
+    .default("H", parsed_floo.host || default_host)
+    .default("p", 3448)
+    .describe("join", "The URL of the workspace to join (cannot be used with --share).")
+    .describe("share", "Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.")
+    .boolean("share")
+    .describe("w", "The Floobits Workspace.")
+    .default("w", parsed_floo.workspace)
+    .describe("o", "The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.")
+    .default("o", parsed_floo.owner || username)
+    .describe("read-only", "Will not send patches for local modifications (Always enabled for OS X).")
+    .describe("H", "Host to connect to. For debugging/development. Defaults to floobits.com.")
+    .describe("p", "Port to use. For debugging/development. Defaults to 3448.")
+    .describe("verbose", "Enable debugging output.")
+    .describe("no-browser", "Don't try to open the web editor (--read-only mode also enables this)")
+    .demand(["H", "p"])
     .argv;
 };
 
@@ -51,7 +55,9 @@ exports.run = function () {
     parsed_url,
     series = [function (cb) { cb(); }],
     args = parse_args(floorc),
-    _path;
+    _path,
+    username,
+    secret;
 
   if (args._.length === 0) {
     _path = cwd;
@@ -72,13 +78,16 @@ exports.run = function () {
     process.exit(0);
   }
 
-  args.o = args.o || floorc.username;
   if (args.share && args.share === true) {
     args.share = _path;
   }
   args.w = _.compose(path.normalize, path.basename)(args.w || args.share);
 
   if (args.join) {
+    if (args.share) {
+      log.error("You can't share and join at the same time!");
+      process.exit(1);
+    }
     parsed_url = utils.parse_url(args.join);
     args.w = parsed_url.workspace;
     args.o = parsed_url.owner;
@@ -91,7 +100,14 @@ exports.run = function () {
   }
 
   if (args.share) {
-    series.push(api.create.bind(api, args.H, floorc.username, args.o, floorc.secret, args.w, args.perms));
+    try {
+      username = floorc.auth[args.H].username;
+      secret = floorc.auth[args.H].secret;
+    } catch (e) {
+      log.error("No auth found for %s", args.H);
+      process.exit(1);
+    }
+    series.push(api.create.bind(api, args.H, username, args.o, secret, args.w, args.perms));
   }
 
   async.series(series, function (err) {
