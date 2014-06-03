@@ -119,7 +119,12 @@ exports.run = function () {
     }
 
     mkdirp.sync(_path);
-    floo_conn = new lib.FlooConnection(_path, floorc, args);
+    try {
+      floo_conn = new lib.FlooConnection(_path, floorc, args);
+    } catch (e) {
+      log.error(e);
+      process.exit(1);
+    }
 
     if (!args['read-only'] && !args['no-browser']) {
       floo_conn.once('room_info', function () {
