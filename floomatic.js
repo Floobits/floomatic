@@ -5,6 +5,7 @@
 var fs = require("fs");
 var path = require("path");
 var os = require("os");
+var util = require("util");
 
 var mkdirp = require('mkdirp');
 var async = require("async");
@@ -18,6 +19,7 @@ var _ = require("lodash");
 var lib = require("./lib");
 var api = lib.api;
 var utils = lib.utils;
+var package_json = require("./package.json");
 
 log.set_log_level("log");
 
@@ -40,13 +42,18 @@ var parse_args = function (floorc) {
     .default("w", parsed_floo.workspace)
     .describe("o", "The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.")
     .default("o", parsed_floo.owner || username)
-    .describe("read-only", "Will not send patches for local modifications (Always enabled for OS X).")
+    .describe("read-only", "Don't send patches for local modifications.")
     .describe("H", "Host to connect to. For debugging/development. Defaults to floobits.com.")
     .describe("p", "Port to use. For debugging/development. Defaults to 3448.")
     .describe("verbose", "Enable debugging output.")
+    .describe("version", "Print version.")
     .describe("no-browser", "Don't try to open the web editor (--read-only mode also enables this)")
     .demand(["H", "p"])
     .argv;
+};
+
+var print_version = function () {
+  console.log(util.format("%s version %s", package_json.name, package_json.version));
 };
 
 exports.run = function () {
@@ -74,7 +81,13 @@ exports.run = function () {
   }
 
   if (args.help || args.h) {
+    print_version();
     optimist.showHelp();
+    process.exit(0);
+  }
+
+  if (args.version) {
+    print_version();
     process.exit(0);
   }
 
