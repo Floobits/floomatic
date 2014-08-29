@@ -2,6 +2,9 @@
 
 A headless [Floobits](https://floobits.com/) workspace and disk watcher. Handy for shipping changes to a testing server.
 
+[![NPM version](https://badge.fury.io/js/floomatic.svg)](http://badge.fury.io/js/floomatic)
+
+
 ## Setup
 
 1.
