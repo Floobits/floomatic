@@ -7,7 +7,7 @@ var path = require("path");
 var os = require("os");
 var util = require("util");
 
-var mkdirp = require('mkdirp');
+var mkdirp = require("mkdirp");
 var async = require("async");
 var dmp_module = require("diff_match_patch");
 var DMP = new dmp_module.diff_match_patch();
@@ -32,12 +32,12 @@ var parse_args = function (floorc) {
   username = floorc.auth[default_host].username;
 
   return optimist
-    .usage("Usage: $0 --join [url] --share --read-only --verbose [path_to_sync]")
+    .usage("Usage: $0 --join [url] --share [url] --read-only --verbose [path_to_sync]")
     .default("H", parsed_floo.host || default_host)
     .default("p", 3448)
     .describe("join", "The URL of the workspace to join (cannot be used with --share).")
+    .default("share", false)
     .describe("share", "Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.")
-    .boolean("share")
     .describe("w", "The Floobits Workspace.")
     .default("w", parsed_floo.workspace)
     .describe("o", "The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.")
@@ -96,14 +96,15 @@ exports.run = function () {
   }
   args.w = _.compose(path.normalize, path.basename)(args.w || args.share);
 
-  if (args.join) {
-    if (args.share) {
-      log.error("You can't share and join at the same time!");
-      process.exit(1);
-    }
-    parsed_url = utils.parse_url(args.join);
+  if (args.join && args.share) {
+    log.error("You can't share and join at the same time!");
+    process.exit(1);
+  }
+  if (args.join || args.share) {
+    parsed_url = utils.parse_url(args.join || args.share);
     args.w = parsed_url.workspace;
     args.o = parsed_url.owner;
+    args.H = parsed_url.host;
   }
 
   if (!args.w) {
@@ -117,10 +118,17 @@ exports.run = function () {
       username = floorc.auth[args.H].username;
       secret = floorc.auth[args.H].secret;
     } catch (e) {
-      log.error("No auth found for %s", args.H);
+      log.error("No auth found in ~/.floorc.json for %s", args.H);
       process.exit(1);
     }
-    series.push(api.create.bind(api, args.H, username, args.o, secret, args.w, args.perms));
+    series.push(function (cb) {
+      api.create(args.H, username, args.o, secret, args.w, args.perms, function (err) {
+        if (err && err.statusCode !== 403) {
+          return cb(err);
+        }
+        return cb();
+      });
+    });
   }
 
   async.series(series, function (err) {
@@ -139,12 +147,18 @@ exports.run = function () {
       process.exit(1);
     }
 
-    if (!args['read-only'] && !args['no-browser']) {
-      floo_conn.once('room_info', function () {
-        log.log("Opening browser to %s", workspace_url);
-        open_url(workspace_url);
-      });
-    }
+    floo_conn.once("room_info", function () {
+      if (args["read-only"]) {
+        log.log("Not opening browser because you don't have permission to write to this workspace.");
+        return;
+      }
+      if (args["no-browser"]) {
+        log.log("Not opening browser because you specified --no-browser.");
+        return;
+      }
+      log.log("Opening browser to %s", workspace_url);
+      open_url(workspace_url);
+    });
     log.log("Joining workspace %s", workspace_url);
     floo_conn.connect();
   });
