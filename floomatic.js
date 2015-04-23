@@ -129,6 +129,11 @@ exports.run = function () {
         return cb();
       });
     });
+  } else if (!args.join) {
+    series.push(function (cb) {
+      log.log("Only syncing changes made after startup. Use --share to upload existing local files.");
+      return cb();
+    });
   }
 
   async.series(series, function (err) {
