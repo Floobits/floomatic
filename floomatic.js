@@ -40,7 +40,7 @@ var parse_args = function (floorc) {
     .describe("share", "Creates a new workspace if possible. Otherwise, it will sync local files to the existing workspace.")
     .describe("w", "The Floobits Workspace.")
     .default("w", parsed_floo.workspace)
-    .describe("o", "The owner of the Workspace. Defaults to the .floo file\'s owner or your ~/.floorc username.")
+    .describe("o", "The owner of the Workspace. Defaults to the .floo file's owner or your ~/.floorc username.")
     .default("o", parsed_floo.owner || username)
     .describe("read-only", "Don't send patches for local modifications.")
     .describe("H", "Host to connect to. For debugging/development. Defaults to floobits.com.")
@@ -109,7 +109,7 @@ exports.run = function () {
 
   if (!args.w) {
     optimist.showHelp();
-    log.error('I need a workspace name.');
+    log.error("I need a workspace name.");
     process.exit(0);
   }
 
