@@ -1,16 +1,11 @@
 #!/usr/bin/env node
-/*jslint indent: 2, node: true, nomen: true, plusplus: true, todo: true */
 "use strict";
 
-var fs = require("fs");
 var path = require("path");
-var os = require("os");
 var util = require("util");
 
 var mkdirp = require("mkdirp");
 var async = require("async");
-var dmp_module = require("diff_match_patch");
-var DMP = new dmp_module.diff_match_patch();
 var log = require("floorine");
 var open_url = require("open");
 var optimist = require("optimist");
@@ -24,7 +19,7 @@ var package_json = require("./package.json");
 log.set_log_level("log");
 
 
-var parse_args = function (floorc) {
+function parse_args (floorc) {
   var parsed_floo = utils.parse_dot_floo(),
     default_host = floorc.default_host || "floobits.com",
     username;
@@ -50,11 +45,11 @@ var parse_args = function (floorc) {
     .describe("no-browser", "Don't try to open the web editor (--read-only mode also enables this)")
     .demand(["H", "p"])
     .argv;
-};
+}
 
-var print_version = function () {
+function print_version () {
   console.log(util.format("%s version %s", package_json.name, package_json.version));
-};
+}
 
 exports.run = function () {
   var cwd = process.cwd(),
@@ -83,12 +78,16 @@ exports.run = function () {
   if (args.help || args.h) {
     print_version();
     optimist.showHelp();
+    /*eslint-disable no-process-exit */
     process.exit(0);
+    /*eslint-enable no-process-exit */
   }
 
   if (args.version) {
     print_version();
+    /*eslint-disable no-process-exit */
     process.exit(0);
+    /*eslint-enable no-process-exit */
   }
 
   if (args.share && args.share === true) {
@@ -98,7 +97,9 @@ exports.run = function () {
 
   if (args.join && args.share) {
     log.error("You can't share and join at the same time!");
+    /*eslint-disable no-process-exit */
     process.exit(1);
+    /*eslint-enable no-process-exit */
   }
   if (args.join || args.share) {
     parsed_url = utils.parse_url(args.join || args.share);
@@ -110,7 +111,9 @@ exports.run = function () {
   if (!args.w) {
     optimist.showHelp();
     log.error("I need a workspace name.");
+    /*eslint-disable no-process-exit */
     process.exit(0);
+    /*eslint-enable no-process-exit */
   }
 
   if (args.share) {
@@ -119,7 +122,9 @@ exports.run = function () {
       secret = floorc.auth[args.H].secret;
     } catch (e) {
       log.error("No auth found in ~/.floorc.json for %s", args.H);
+      /*eslint-disable no-process-exit */
       process.exit(1);
+      /*eslint-enable no-process-exit */
     }
     series.push(function (cb) {
       api.create(args.H, username, args.o, secret, args.w, args.perms, function (err) {
@@ -149,7 +154,9 @@ exports.run = function () {
       floo_conn = new lib.FlooConnection(_path, floorc, args);
     } catch (e) {
       log.error(e);
+      /*eslint-disable no-process-exit */
       process.exit(1);
+      /*eslint-enable no-process-exit */
     }
 
     floo_conn.once("room_info", function () {
