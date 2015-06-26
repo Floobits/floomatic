@@ -10,12 +10,8 @@
     "Geoff Greer <geoff@greer.fm>"
   ],
   "version": "0.4.8",
-  "optionalDependencies": {
-    "fsevents": ">=0.1.5",
-    "native-diff-match-patch": ">=0.0.4"
-  },
   "dependencies": {
-    "async": "0.9.x",
+    "async": "1.x",
     "diff_match_patch": "0.1.x",
     "floorine": "0.3.x",
     "lodash": "3.x",
@@ -25,8 +21,15 @@
     "optimist": "0.6.x",
     "request": "2.x"
   },
+  "devDependencies": {
+    "eslint": "0.x"
+  },
+  "optionalDependencies": {
+    "fsevents": "0.x",
+    "native-diff-match-patch": ">=0.0.4"
+  },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=0.12.0"
   },
   "preferGlobal": true,
   "bin": {
@@ -36,6 +39,7 @@
     "lib": "./lib"
   },
   "scripts": {
+    "lint": "./node_modules/eslint/bin/eslint.js *.js lib/*.js",
     "start": "./bin/floomatic"
   },
   "bugs": {
