@@ -22,11 +22,11 @@
     "request": "2.x"
   },
   "devDependencies": {
-    "eslint": "0.x"
+    "eslint": "1.x"
   },
   "optionalDependencies": {
     "fsevents": "0.x",
-    "native-diff-match-patch": ">=0.0.4"
+    "native-diff-match-patch": "0.x"
   },
   "engines": {
     "node": ">=0.12.0"
