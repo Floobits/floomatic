@@ -25,7 +25,6 @@ function parse_args (floorc) {
     username;
 
   username = floorc.auth[default_host].username;
-
   return optimist
     .usage("Usage: $0 --join [url] --share [url] --read-only --verbose [path_to_sync]")
     .default("H", parsed_floo.host || default_host)
@@ -56,11 +55,15 @@ exports.run = function () {
     floorc = utils.parse_floorc(),
     parsed_url,
     series = [function (cb) { cb(); }],
-    args = parse_args(floorc),
+    args,
     _path,
     username,
     secret;
 
+  if (!floorc) {
+    process.exit(1);
+  }
+  args = parse_args(floorc);
   if (args._.length === 0) {
     _path = cwd;
   } else if (args._.length === 1) {
@@ -101,21 +104,25 @@ exports.run = function () {
     process.exit(1);
     /*eslint-enable no-process-exit */
   }
-  if (args.join || args.share) {
-    parsed_url = utils.parse_url(args.join || args.share);
+  if (args.join) {
+    parsed_url = utils.parse_url(args.join);
     args.w = parsed_url.workspace;
     args.o = parsed_url.owner;
     args.H = parsed_url.host;
+    if(!args.H) {
+      optimist.showHelp();
+      log.error("Floomatic couldn't find a host, did you provide a valid URL?");
+      process.exit(1)
+    }
   }
 
-  if (!args.w) {
+  if (!args.w || !args.o) {
     optimist.showHelp();
-    log.error("I need a workspace name.");
+    log.error("Floomatic needs a workspace name and the name of the user org that owns it.");
     /*eslint-disable no-process-exit */
-    process.exit(0);
+    process.exit(1);
     /*eslint-enable no-process-exit */
   }
-
   if (args.share) {
     try {
       username = floorc.auth[args.H].username;
