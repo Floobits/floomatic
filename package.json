@@ -12,7 +12,7 @@
   "version": "0.5.0",
   "dependencies": {
     "async": "1.x",
-    "diff_match_patch": "0.1.x",
+    "dmp": "0.x",
     "floorine": "0.3.x",
     "lodash": "3.x",
     "minimatch": "2.x",
