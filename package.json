@@ -22,7 +22,8 @@
     "request": "2.x"
   },
   "devDependencies": {
-    "eslint": "1.x"
+    "eslint": "1.x",
+    "eslint-config-floobits": "*"
   },
   "optionalDependencies": {
     "fsevents": "0.x",
