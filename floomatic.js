@@ -112,7 +112,7 @@ exports.run = function () {
     if(!args.H) {
       optimist.showHelp();
       log.error("Floomatic couldn't find a host, did you provide a valid URL?");
-      process.exit(1)
+      process.exit(1);
     }
   }
 
