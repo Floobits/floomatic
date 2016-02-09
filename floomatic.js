@@ -96,7 +96,7 @@ exports.run = function () {
   if (args.share && args.share === true) {
     args.share = _path;
   }
-  args.w = _.compose(path.normalize, path.basename)(args.w || args.share);
+  args.w = _.flowRight(path.normalize, path.basename)(args.w || args.share);
 
   if (args.join && args.share) {
     log.error("You can't share and join at the same time!");
