@@ -22,7 +22,7 @@
     "request": "2.x"
   },
   "devDependencies": {
-    "eslint": "1.x",
+    "eslint": "2.x",
     "eslint-config-floobits": "*"
   },
   "optionalDependencies": {
@@ -30,7 +30,7 @@
     "native-diff-match-patch": "0.x"
   },
   "engines": {
-    "node": ">=0.12.0"
+    "node": ">=4.0"
   },
   "preferGlobal": true,
   "bin": {
