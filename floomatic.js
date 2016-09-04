@@ -96,7 +96,6 @@ exports.run = function () {
   if (args.share && args.share === true) {
     args.share = _path;
   }
-  args.w = _.flowRight(path.normalize, path.basename)(args.w || args.share);
 
   if (args.join && args.share) {
     log.error("You can't share and join at the same time!");
@@ -114,6 +113,8 @@ exports.run = function () {
       log.error("Floomatic couldn't find a host, did you provide a valid URL?");
       process.exit(1);
     }
+  } else {
+    args.w = _.flowRight(path.normalize, path.basename)(args.w || args.share);
   }
 
   if (!args.w || !args.o) {
