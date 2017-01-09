@@ -12,7 +12,7 @@
   "version": "0.5.4",
   "dependencies": {
     "async": "1.x",
-    "dmp": "0.x",
+    "dmp": "1.x",
     "floorine": "0.3.x",
     "lodash": "4.x",
     "minimatch": "3.x",
@@ -22,7 +22,7 @@
     "request": "2.x"
   },
   "devDependencies": {
-    "eslint": "2.x",
+    "eslint": "3.x",
     "eslint-config-floobits": "*"
   },
   "optionalDependencies": {
