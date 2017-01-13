@@ -9,7 +9,7 @@
     "Matt Kaniaris <mkaniaris@gmail.com>",
     "Geoff Greer <geoff@greer.fm>"
   ],
-  "version": "0.5.4",
+  "version": "0.5.5",
   "dependencies": {
     "async": "1.x",
     "dmp": "1.x",
