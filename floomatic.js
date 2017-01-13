@@ -65,7 +65,11 @@ exports.run = function () {
   }
   args = parse_args(floorc);
   if (args._.length === 0) {
-    _path = cwd;
+    if (args.share && args.share !== true) {
+      _path = args.share;
+    } else {
+      _path = cwd;
+    }
   } else if (args._.length === 1) {
     _path = args._[0];
   } else {
