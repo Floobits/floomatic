@@ -117,7 +117,7 @@ exports.run = function () {
       log.error("Floomatic couldn't find a host, did you provide a valid URL?");
       process.exit(1);
     }
-  } else {
+  } else if (args.w || args.share) {
     args.w = _.flowRight(path.normalize, path.basename)(args.w || args.share);
   }
 
