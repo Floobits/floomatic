@@ -20,11 +20,10 @@ log.set_log_level("log");
 
 
 function parse_args (floorc) {
-  var parsed_floo = utils.parse_dot_floo(),
-    default_host = floorc.default_host || "floobits.com",
-    username;
+  const parsed_floo = utils.parse_dot_floo();
+  const default_host = floorc.default_host || "floobits.com";
 
-  username = floorc.auth[default_host].username;
+  const username = floorc.auth[default_host].username;
   return optimist
     .usage("Usage: $0 --join [url] --share [url] --read-only --verbose [path_to_sync]")
     .default("H", parsed_floo.host || default_host)
@@ -51,24 +50,17 @@ function print_version () {
 }
 
 exports.run = function () {
-  var cwd = process.cwd(),
-    floorc = utils.parse_floorc(),
-    parsed_url,
-    series = [function (cb) { cb(); }],
-    args,
-    _path,
-    username,
-    secret;
-
+  const floorc = utils.parse_floorc();
   if (!floorc) {
     process.exit(1);
   }
-  args = parse_args(floorc);
+  let _path;
+  const args = parse_args(floorc);
   if (args._.length === 0) {
     if (args.share && args.share !== true) {
       _path = args.share;
     } else {
-      _path = cwd;
+      _path = process.cwd();
     }
   } else if (args._.length === 1) {
     _path = args._[0];
@@ -107,6 +99,7 @@ exports.run = function () {
     process.exit(1);
     /*eslint-enable no-process-exit */
   }
+  let parsed_url;
   if (args.join) {
     parsed_url = utils.parse_url(args.join);
     args.w = parsed_url.workspace;
@@ -128,6 +121,9 @@ exports.run = function () {
     process.exit(1);
     /*eslint-enable no-process-exit */
   }
+  let username;
+  let secret;
+  let series = [function (cb) { cb(); }];
   if (args.share) {
     try {
       username = floorc.auth[args.H].username;
@@ -154,14 +150,12 @@ exports.run = function () {
   }
 
   async.series(series, function (err) {
-    var floo_conn,
-      workspace_url = utils.to_browser_url(args.p === 3448, args.H, args.o, args.w);
-
     if (err) {
       return log.error(err);
     }
 
     mkdirp.sync(_path);
+    let floo_conn;
     try {
       floo_conn = new lib.FlooConnection(_path, floorc, args);
     } catch (e) {
@@ -171,6 +165,7 @@ exports.run = function () {
       /*eslint-enable no-process-exit */
     }
 
+    const workspace_url = utils.to_browser_url(args.p === 3448, args.H, args.o, args.w);
     floo_conn.once("room_info", function () {
       if (args["read-only"]) {
         log.log("Not opening browser because you don't have permission to write to this workspace.");
